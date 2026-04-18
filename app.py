@@ -342,7 +342,9 @@ html, body, [class*="css"] {
     transform: rotate(45deg);
 }
 @media (max-width: 640px) {
-    .admin-gear { bottom: 10px; right: 10px; width: 26px; height: 26px; font-size: 12px; opacity: 0.25; }
+    /* On mobile keep it subtle but actually visible — 0.25 was basically invisible,
+       especially when Streamlit's floating chrome was stacked on top. */
+    .admin-gear { bottom: 12px; right: 12px; width: 30px; height: 30px; font-size: 13px; opacity: 0.55; }
 }
 
 /* Floating "Rules" pill — clearly visible, bottom-right, next to admin gear */
@@ -872,6 +874,36 @@ div:has(> .join-pool-marker) + div .stButton > button:active {
         text-align: center;
     }
 
+    /* Entry-card pick chips were overflowing the right edge on phones because
+       desktop CSS sets `.picks-area { flex: 1 }` which expands to flex-basis:0%
+       and overrides width:100% inside a flex container. Force flex-basis:100%
+       so the picks-area lands on its own row below name/score, and chips wrap
+       cleanly inside it. Also cap chip max-width so a single long name like
+       "Wyndham Clark -9" can't overflow the card. */
+    .picks-area {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        order: 3 !important;
+        gap: 5px !important;
+        justify-content: flex-start !important;
+    }
+    .days-area {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        order: 4 !important;
+    }
+    .pick-chip {
+        max-width: 100% !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        font-size: 0.72rem !important;
+        padding: 3px 7px !important;
+    }
+    /* Total score sits inline next to rank+name on the first row */
+    .total-score { order: 2 !important; flex-shrink: 0 !important; }
+
     /* Tournament Leaders — allow tee-time pill to wrap below name on tight screens */
     .tourney-row { flex-wrap: wrap !important; padding: 9px 12px !important; gap: 6px 10px !important; }
     .tourney-pos { font-size: 0.82rem !important; width: 20px !important; }
@@ -913,7 +945,9 @@ div:has(> .join-pool-marker) + div .stButton > button:active {
     .brag-header { font-size: 1.2rem !important; }
     .brag-pick { padding: 7px 10px !important; font-size: 0.88rem !important; }
 
-    /* Winners grid on phones → 2 cols (already set), tighten padding */
+    /* Winners grid on phones → 2 cols (already set), tighten padding.
+       Overall winner (last card) spans both columns for visual balance. */
+    .winners-grid > .winner-card:last-child { grid-column: 1 / -1 !important; }
     .winner-card { padding: 9px 8px !important; }
     .winner-day { font-size: 0.52rem !important; letter-spacing: 1.2px !important; margin-bottom: 4px !important; }
     .winner-score { font-size: 0.72rem !important; }
@@ -996,7 +1030,14 @@ div:has(> .join-pool-marker) + div .stButton > button:active {
 
 .divider { border:none; border-top:1px solid #1e2e1e; margin:20px 0; }
 #MainMenu, header, footer { visibility:hidden; }
-.stDeployButton { display:none; }
+.stDeployButton,
+.stAppDeployButton,
+[data-testid="stDeployButton"],
+[data-testid="stAppDeployButton"],
+.viewerBadge_link__qRIco,
+.viewerBadge_container__r5tak,
+[data-testid="stStatusWidget"],
+[data-testid="stAppViewBlockContainer"] > [data-testid="stToolbar"] { display:none !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -2315,10 +2356,11 @@ if leaderboard:
     st.caption(f"Showing top {min(25, len(leaderboard))} of {len(leaderboard)} all-time players.")
 else:
     st.markdown("""
-    <div style="text-align:center;padding:40px 20px;color:#4a6b4a;">
-        <div style="font-size:2rem;">🏆</div>
-        <div style="font-family:'Playfair Display',serif;font-size:1.2rem;color:#fff;margin-top:8px;">Hall of Fame opens after Sunday</div>
-        <div style="font-size:0.8rem;color:#4a6b4a;margin-top:4px;">All-time leaders appear here once tournaments wrap.</div>
+    <div class="hof-empty" style="text-align:center;padding:24px 16px;color:#4a6b4a;
+        background:#0d160d; border:1px solid #1e2e1e; border-radius:12px; margin:4px 0 8px 0;">
+        <div style="font-size:1.6rem;">🏆</div>
+        <div style="font-family:'Playfair Display',serif;font-size:1rem;color:#fff;margin-top:4px;">Hall of Fame opens after Sunday</div>
+        <div style="font-size:0.72rem;color:#4a6b4a;margin-top:3px;letter-spacing:0.5px;">All-time leaders appear here once tournaments wrap.</div>
     </div>
     """, unsafe_allow_html=True)
 
