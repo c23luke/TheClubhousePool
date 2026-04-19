@@ -324,16 +324,18 @@ html, body, [class*="css"] {
 .hof-pill-gold   { background:#2a1f08; color:#d4af37; border:1px solid #d4af3755; }
 .hof-pill-silver { background:#1a1a1a; color:#a8a29e; border:1px solid #5a554f55; }
 
-/* Floating admin gear — tiny and unobtrusive, bottom-right corner */
+/* Floating admin gear — tiny and unobtrusive, bottom-LEFT corner.
+   Moved from bottom-right because Streamlit's "Manage app" floating button
+   sits bottom-right for app owners and is impossible to reliably hide. */
 .admin-gear {
     position: fixed;
-    bottom: 14px; right: 14px;
-    width: 30px; height: 30px;
+    bottom: 14px; left: 14px;
+    width: 32px; height: 32px;
     display: flex; align-items: center; justify-content: center;
     background: #0d160d; border: 1px solid #1e2e1e; border-radius: 50%;
     color: #4a6b4a !important;
     font-size: 14px; text-decoration: none !important;
-    opacity: 0.35; transition: opacity 0.2s, transform 0.2s, color 0.2s;
+    opacity: 0.55; transition: opacity 0.2s, transform 0.2s, color 0.2s;
     z-index: 9999;
     cursor: pointer;
 }
@@ -342,9 +344,7 @@ html, body, [class*="css"] {
     transform: rotate(45deg);
 }
 @media (max-width: 640px) {
-    /* On mobile keep it subtle but actually visible — 0.25 was basically invisible,
-       especially when Streamlit's floating chrome was stacked on top. */
-    .admin-gear { bottom: 12px; right: 12px; width: 30px; height: 30px; font-size: 13px; opacity: 0.55; }
+    .admin-gear { bottom: 12px; left: 12px; width: 32px; height: 32px; font-size: 13px; opacity: 0.7; }
 }
 
 /* Floating "Rules" pill — clearly visible, bottom-right, next to admin gear */
@@ -734,34 +734,126 @@ div:has(> .join-pool-marker) + div .stButton > button:active {
     .stat-label { font-size:0.58rem; letter-spacing:1px; }
     .section-title { padding-left:10px; margin-bottom:10px; }
 
-    /* Entry cards — stack name on top, picks below, rank + total sticky */
-    .entry-card { flex-wrap: wrap; gap: 6px 10px; padding: 10px 12px; }
-    .entry-card > div:nth-child(2) { flex:1; min-width:0; }
-    .picks-stack { width: 100%; order: 3; gap:3px; }
-    .picks-area { width: 100%; gap:5px; }
-    .total-score { order: 2; font-size:1.2rem; width:42px; }
-    .rank-badge { font-size: 1rem; width: 26px; }
-    .rank-stack { width:50px; gap:3px; }
-    .rank-stack .medal { font-size:1.2rem; }
-    .rank-stack .rank-num-lead { font-size:1.2rem; }
-    .rank-stack .money-pill { font-size:0.62rem; padding:1px 7px; letter-spacing:0.2px; }
-    .entry-name { font-size: 0.9rem; }
-    .entry-venmo { font-size:0.68rem; }
-    .pick-chip { font-size: 0.68rem; padding: 2px 6px; }
-    .entry-id { min-width:0 !important; flex:1 1 auto !important; }
-    .picks-area { width:100%; order:3; gap:5px; }
-    .days-area {
-        width:100%; order:4;
-        grid-template-columns: repeat(4, 1fr);
-        border-left:none !important;
-        border-top:1px solid #1a2a1a;
-        padding:6px 0 0 0 !important;
-        margin-top:4px;
-        gap:5px !important;
+    /* ================================================================
+       ENTRY CARD — COMPACT MOBILE LAYOUT
+       Goals: (1) skinnier cards so more fit on screen, (2) pick names
+       always fully visible, (3) scores right-aligned for easy scanning.
+       ================================================================ */
+    .entry-card {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 2px 10px !important;
+        padding: 8px 12px !important;
+        align-items: center !important;
     }
-    .day-chip { padding:3px 4px; min-width:0; }
-    .day-chip .day-lbl { font-size:0.5rem; }
-    .day-chip .day-val { font-size:0.7rem; }
+    /* First row: rank | name+venmo | total score */
+    .rank-badge { font-size: 0.95rem !important; width: 24px !important; flex-shrink: 0; }
+    .rank-stack { width: 44px !important; gap: 2px !important; flex-shrink: 0; }
+    .rank-stack .medal { font-size: 1.1rem !important; }
+    .rank-stack .rank-num-lead { font-size: 1rem !important; }
+    .rank-stack .money-pill { font-size: 0.58rem !important; padding: 1px 6px !important; letter-spacing: 0 !important; }
+    .rank-wrap { width: auto !important; flex-shrink: 0; }
+    .pos-delta { font-size: 0.52rem !important; padding: 0px 4px !important; }
+
+    .entry-id { flex: 1 1 auto !important; min-width: 0 !important; padding-left: 2px; }
+    .entry-name { font-size: 0.92rem !important; line-height: 1.15 !important; }
+    .entry-venmo { font-size: 0.65rem !important; margin-top: 0 !important; }
+
+    .total-score {
+        order: 2 !important;
+        font-size: 1.3rem !important;
+        width: auto !important;
+        min-width: 44px !important;
+        text-align: right !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Picks area becomes a clean vertical LIST of "Name ……… Score" rows.
+       No pill borders, no background — just readable text, full width. */
+    .picks-area {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 0 !important;
+        order: 3 !important;
+        margin: 4px 0 0 0 !important;
+        padding: 4px 0 0 0 !important;
+        border-top: 1px solid #1a2a1a !important;
+    }
+    .pick-chip {
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 3px 2px !important;
+        font-size: 0.82rem !important;
+        white-space: normal !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: baseline !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        line-height: 1.25 !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+    }
+    .pick-chip.best { background: transparent !important; }
+    .pick-chip-name {
+        flex: 1 1 auto;
+        min-width: 0;
+        color: #c8d8c8 !important;
+        font-weight: 400;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .pick-chip.best .pick-chip-name {
+        color: #fff !important;
+        font-weight: 600;
+    }
+    .pick-chip-star { margin-right: 4px; }
+    .pick-chip-score,
+    .pick-chip .pick-score-under,
+    .pick-chip .pick-score-over,
+    .pick-chip .pick-score-even {
+        flex-shrink: 0 !important;
+        margin-left: 10px !important;
+        font-size: 0.88rem !important;
+        font-weight: 700 !important;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* Days row — compact single line on mobile */
+    .days-area {
+        flex: 0 0 100% !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        order: 4 !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        border-left: none !important;
+        border-top: 1px dashed #1a2a1a !important;
+        padding: 5px 0 0 0 !important;
+        margin: 4px 0 0 0 !important;
+        gap: 4px !important;
+    }
+    .day-chip {
+        padding: 2px 3px !important;
+        min-width: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        flex-direction: row !important;
+        justify-content: center !important;
+        align-items: baseline !important;
+        gap: 4px !important;
+    }
+    .day-chip .day-lbl { font-size: 0.55rem !important; letter-spacing: 0.8px !important; }
+    .day-chip .day-val { font-size: 0.75rem !important; font-weight: 700 !important; }
+    .day-chip.winner {
+        background: #1a1408 !important;
+        border: 1px solid #d4af37aa !important;
+        border-radius: 6px !important;
+    }
 
     /* Winners grid — 2 cols on phones (4 days = 2x2) */
     .winners-grid { grid-template-columns: repeat(2,1fr) !important; gap:6px; }
@@ -798,12 +890,11 @@ div:has(> .join-pool-marker) + div .stButton > button:active {
 /* Extra-narrow phones (<380px) */
 @media (max-width: 380px) {
     .main-title { font-size:1.6rem !important; }
-    .entry-card { padding:9px 10px; }
-    .picks-area { gap:4px; }
-    .pick-chip { font-size:0.64rem; padding:2px 5px; }
-    .day-chip { font-size:0.62rem; padding:2px 4px; }
-    .day-chip .day-lbl { font-size:0.5rem; }
-    .day-chip .day-val { font-size:0.64rem; }
+    .entry-card { padding: 7px 10px !important; }
+    .pick-chip { font-size: 0.78rem !important; padding: 2px 2px !important; }
+    .pick-chip-score { font-size: 0.82rem !important; }
+    .day-chip .day-lbl { font-size:0.5rem !important; }
+    .day-chip .day-val { font-size:0.68rem !important; }
     .winners-grid { gap:5px; }
     .winner-name { font-size:0.78rem; }
     .tourney-row span[style*="width:50px"],
@@ -874,35 +965,8 @@ div:has(> .join-pool-marker) + div .stButton > button:active {
         text-align: center;
     }
 
-    /* Entry-card pick chips were overflowing the right edge on phones because
-       desktop CSS sets `.picks-area { flex: 1 }` which expands to flex-basis:0%
-       and overrides width:100% inside a flex container. Force flex-basis:100%
-       so the picks-area lands on its own row below name/score, and chips wrap
-       cleanly inside it. Also cap chip max-width so a single long name like
-       "Wyndham Clark -9" can't overflow the card. */
-    .picks-area {
-        flex: 0 0 100% !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        order: 3 !important;
-        gap: 5px !important;
-        justify-content: flex-start !important;
-    }
-    .days-area {
-        flex: 0 0 100% !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        order: 4 !important;
-    }
-    .pick-chip {
-        max-width: 100% !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        font-size: 0.72rem !important;
-        padding: 3px 7px !important;
-    }
-    /* Total score sits inline next to rank+name on the first row */
-    .total-score { order: 2 !important; flex-shrink: 0 !important; }
+    /* (Entry-card / picks-area / pick-chip rules live in the earlier
+       compact-list block — don't redeclare here.) */
 
     /* Tournament Leaders — allow tee-time pill to wrap below name on tight screens */
     .tourney-row { flex-wrap: wrap !important; padding: 9px 12px !important; gap: 6px 10px !important; }
@@ -955,9 +1019,9 @@ div:has(> .join-pool-marker) + div .stButton > button:active {
     /* Section titles on mobile — stay prominent */
     .section-title { font-size: 1rem !important; margin-top: 6px; }
 
-    /* Floating help / admin pills — keep out of thumb zone */
-    .help-icon { bottom: 12px !important; right: 50px !important; }
-    .admin-gear { bottom: 12px !important; right: 12px !important; }
+    /* Floating help / admin pills — gear is bottom-LEFT now, keep help bottom-right */
+    .help-icon { bottom: 12px !important; right: 12px !important; }
+    .admin-gear { bottom: 12px !important; left: 12px !important; right: auto !important; }
 }
 
 /* Very narrow phones — iPhone mini, older Android */
@@ -2160,10 +2224,17 @@ if not df_display.empty:
         for idx, (pname, pscore) in enumerate(row["Picks"]):
             is_best  = (idx == row["BestIndex"])
             sc_cls   = "pick-score-under" if pscore<0 else "pick-score-over" if pscore>0 else "pick-score-even"
-            star     = "⭐ " if is_best else ""
+            star     = '<span class="pick-chip-star">⭐</span>' if is_best else ""
             chip_cls = "pick-chip best" if is_best else "pick-chip"
             ov_badge = '<span class="override-badge">✎</span>' if pname in admin["score_overrides"] else ""
-            picks_html += f'<div class="{chip_cls}">{star}{pname}{ov_badge} <span class="{sc_cls}">{fmt_score(pscore)}</span></div>'
+            # Wrap name in its own span so mobile CSS can use flex space-between
+            # to align "Name ……… Score" on a clean list row.
+            picks_html += (
+                f'<div class="{chip_cls}">'
+                f'<span class="pick-chip-name">{star}{pname}{ov_badge}</span>'
+                f'<span class="{sc_cls} pick-chip-score">{fmt_score(pscore)}</span>'
+                f'</div>'
+            )
 
         # Per-day combined delta score (sum of 3 picks' deltas). None = round not yet scored.
         _pick_names = [p[0] for p in row["Picks"]]
