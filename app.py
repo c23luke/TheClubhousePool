@@ -103,9 +103,9 @@ FORM_FIELD_IDS = {
     "name":  "entry.1409538491",
     "email": "entry.655700445",
     "venmo": "entry.753893729",
-    "pick1": "entry.1348718021",
-    "pick2": "entry.1331079764",
-    "pick3": "entry.430664969",
+    "pick1": "entry.779191009",
+    "pick2": "entry.1167068918",
+    "pick3": "entry.303216206",
 }
 
 # Tier lists — update each tournament with that week's field
