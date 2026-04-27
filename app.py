@@ -112,91 +112,59 @@ FORM_FIELD_IDS = {
 # Must match the options in your Google Form dropdowns EXACTLY
 TIER_1 = [
     "Scottie Scheffler",
-    "Xander Schauffele",
-    "Matt Fitzpatrick",
     "Cameron Young",
-    "Russell Henley",
-    "Tommy Fleetwood",
-    "Patrick Cantlay",
-    "Ludvig Åberg",
     "Collin Morikawa",
-    "Jordan Spieth",
+    "Tommy Fleetwood",
+    "Russell Henley",
     "Si Woo Kim",
-    "Maverick McNealy",
-    "Robert MacIntyre",
     "Sam Burns",
+    "Chris Gotterup",
+    "Patrick Cantlay",
+    "Adam Scott",
+    "Justin Rose",
+    "Maverick McNealy",
     "Viktor Hovland",
-    "Sepp Straka",
-    "Jake Knapp",
-    "Justin Thomas",
-    "Jacob Bridgeman",
+    "Hideki Matsuyama",
     "Min Woo Lee",
-    "Shane Lowry",
-    "Ryo Hisatsune",
-    "Alex Noren",
-    "Akshay Bhatia",
-    "Jason Day",
-    "Brian Harman",
+    "Harris English",
 ]
 TIER_2 = [
-    "Sahith Theegala",
-    "J.J. Spaun",
-    "Chris Gotterup",
-    "Ben Griffin",
-    "Daniel Berger",
-    "Harris English",
-    "Sudarshan Yellamaraju",
-    "J.T. Poston",
-    "Ryan Gerard",
-    "Sungjae Im",
-    "Gary Woodland",
-    "Nicolai Højgaard",
-    "Keegan Bradley",
-    "Kurt Kitayama",
-    "Wyndham Clark",
-    "Matt Wallace",
-    "Samuel Stevens",
-    "Corey Conners",
-    "Michael Thorbjornsen",
+    "Jake Knapp",
     "Rickie Fowler",
+    "Jordan Spieth",
+    "Akshay Bhatia",
+    "Ben Griffin",
+    "Jason Day",
+    "Jacob Bridgeman",
+    "Shane Lowry",
+    "Kurt Kitayama",
+    "J.J. Spaun",
+    "Nicolai Højgaard",
+    "Sepp Straka",
+    "Keegan Bradley",
+    "Gary Woodland",
+    "Justin Thomas",
+    "Keith Mitchell",
     "Harry Hall",
-    "Max Homa",
-    "Marco Penge",
-    "Andrew Novak",
-    "Nick Taylor",
-    "Andrew Putnam",
 ]
 TIER_3 = [
-    "Nico Echavarria",
-    "Tony Finau",
-    "Bud Cauley",
-    "Matt McCarty",
-    "Billy Horschel",
-    "Sami Valimaki",
-    "Michael Kim",
+    "Sahith Theegala",
+    "Samuel Stevens",
+    "Alex Noren",
+    "Ryan Gerard",
     "Pierceson Coody",
-    "Denny McCarthy",
-    "Austin Smotherman",
-    "Jordan Smith",
-    "Michael Brennan",
-    "Ryan Fox",
-    "Taylor Pendrith",
     "Ricky Castillo",
-    "Chandler Blanchet",
-    "Johnny Keefer",
-    "Patrick Rodgers",
-    "Brian Campbell",
-    "David Lipsky",
-    "William Mouw",
-    "Karl Vilips",
-    "Lucas Glover",
-    "Steven Fisk",
-    "Jhonattan Vegas",
-    "Aldrich Potgieter",
-    "Adam Schenk",
-    "Garrick Higgo",
-    "Tom Hoge",
-    "Joe Highsmith",
+    "Corey Conners",
+    "Nick Taylor",
+    "Bud Cauley",
+    "Alex Smalley",
+    "Ryo Hisatsune",
+    "Jordan Smith",
+    "Ryan Fox",
+    "Matt McCarty",
+    "Daniel Berger",
+    "Taylor Pendrith",
+    "Sungjae Im",
 ]
 
 # ============================================================
@@ -3797,25 +3765,45 @@ You're now ready to loop back to <strong>🆕 Setup</strong> for next week's tou
                         t2 = cleaned[_sz1:_sz1 + _sz2]
                         t3 = cleaned[_sz1 + _sz2:]   # gets the remainder
                         ok, msg = update_tier_lists_in_source(t1, t2, t3)
-                        if ok:
-                            st.success(
-                                f"Parsed **{_N}** golfers → Tier 1: **{len(t1)}** · Tier 2: **{len(t2)}** · Tier 3: **{len(t3)}**\n\n{msg}"
-                            )
-                            # Show the three blocks the operator needs to paste into Google Form
-                            st.markdown("**Now paste these into your Google Form's pick-question dropdowns** (one per question):")
-                            gc1, gc2, gc3 = st.columns(3)
-                            with gc1:
-                                st.caption(f"Pick 1 (Tier 1) · {len(t1)}")
-                                st.code("\n".join(t1), language=None)
-                            with gc2:
-                                st.caption(f"Pick 2 (Tier 2) · {len(t2)}")
-                                st.code("\n".join(t2), language=None)
-                            with gc3:
-                                st.caption(f"Pick 3 (Tier 3) · {len(t3)}")
-                                st.code("\n".join(t3), language=None)
-                        else:
-                            st.error(msg)
-                            st.caption("Tiers were NOT written to app.py. Send Claude the field and he'll update it manually.")
+                        # Persist the result so it survives reruns (otherwise the
+                        # copy-paste blocks vanish the moment Streamlit reruns).
+                        st.session_state["_tier_split_result"] = {
+                            "ok": ok, "msg": msg, "n": _N,
+                            "t1": t1, "t2": t2, "t3": t3,
+                        }
+
+                # ── Persistent result panel — survives reruns so you can copy ──
+                _tier_res = st.session_state.get("_tier_split_result")
+                if _tier_res:
+                    if _tier_res["ok"]:
+                        st.success(
+                            f"Parsed **{_tier_res['n']}** golfers → "
+                            f"Tier 1: **{len(_tier_res['t1'])}** · "
+                            f"Tier 2: **{len(_tier_res['t2'])}** · "
+                            f"Tier 3: **{len(_tier_res['t3'])}**\n\n{_tier_res['msg']}"
+                        )
+                        st.markdown(
+                            "**📋 Copy each block below and paste into the matching Google Form question.** "
+                            "Each block has a copy icon in the top-right corner — click it to copy the whole list, "
+                            "or click into the box and ⌘+A then ⌘+C."
+                        )
+                        # Render each tier full-width, one per row — much easier
+                        # to read and copy than narrow side-by-side columns.
+                        st.markdown(f"**Pick 1 — Tier 1 (Favorites)** · {len(_tier_res['t1'])} names")
+                        st.code("\n".join(_tier_res["t1"]), language=None)
+                        st.markdown(f"**Pick 2 — Tier 2 (Contenders)** · {len(_tier_res['t2'])} names")
+                        st.code("\n".join(_tier_res["t2"]), language=None)
+                        st.markdown(f"**Pick 3 — Tier 3 (Longshots)** · {len(_tier_res['t3'])} names")
+                        st.code("\n".join(_tier_res["t3"]), language=None)
+                        if st.button("✓ Done — clear these blocks", key="btn_clear_tier_result"):
+                            st.session_state.pop("_tier_split_result", None)
+                            st.rerun()
+                    else:
+                        st.error(_tier_res["msg"])
+                        st.caption("Tiers were NOT written to app.py. Send Claude the field and he'll update it manually.")
+                        if st.button("✓ Dismiss", key="btn_clear_tier_result_err"):
+                            st.session_state.pop("_tier_split_result", None)
+                            st.rerun()
 
             # ── Tee time / tournament start (for countdown strip) ──
             with st.expander("🕐 First Tee Time — drives the countdown strip", expanded=False):
