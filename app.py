@@ -3876,6 +3876,33 @@ You're now ready to loop back to <strong>🆕 Setup</strong> for next week's tou
                 st.success("✓ New tournament started — board is clean.")
                 st.rerun()
 
+            # ── Bump cutoff only (mid-tournament rescue) ──
+            st.markdown("---")
+            st.markdown("**🕐 Restore Cutoff (mid-tournament rescue)**")
+            st.caption(
+                "Use this if you pushed a code update during a live tournament and last week's entries flashed back in. "
+                "ONLY updates the cutoff filter — does NOT touch daily winners, paid entries, or any other state. "
+                "Pick a time after last week's tournament ended but before this week's first entry was submitted."
+            )
+            from datetime import datetime as _dt2, date as _date3, time as _time3
+            _existing_cutoff = admin.get("entry_cutoff_time", "") or ""
+            try:
+                _ec_dt = _dt2.fromisoformat(_existing_cutoff) if _existing_cutoff else _dt2.now()
+            except Exception:
+                _ec_dt = _dt2.now()
+            _col_cd, _col_ct = st.columns(2)
+            with _col_cd:
+                _bump_date = st.date_input("Cutoff date", value=_ec_dt.date(), key="bump_cutoff_date")
+            with _col_ct:
+                _bump_time = st.time_input("Cutoff time", value=_ec_dt.time().replace(microsecond=0), key="bump_cutoff_time")
+            if st.button("🕐 Set cutoff to this time", key="btn_bump_cutoff"):
+                _new_cutoff = _dt2.combine(_bump_date, _bump_time).isoformat()
+                admin["entry_cutoff_time"] = _new_cutoff
+                save_state(admin)
+                load_sheet.clear()
+                st.success(f"✓ Cutoff set to {_new_cutoff}. Daily winners, paid entries, and all other state untouched.")
+                st.rerun()
+
             # ── Private Leagues (view / rename / delete) ──
             st.markdown("**🏆 Private Leagues**")
             _leagues_dict = admin.get("leagues", {}) or {}
